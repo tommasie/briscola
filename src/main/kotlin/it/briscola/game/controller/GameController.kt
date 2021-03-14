@@ -16,6 +16,7 @@ class GameController {
     val players = mutableListOf<IPlayer>()
     val deck = Stack<Card>()
     val plate = HashSet<Card>()
+    var rounds = 0
     lateinit var briscola: Suit
     lateinit var playersCircle: PlayersCircle
     var handWinner: IPlayer? = null
@@ -26,13 +27,14 @@ class GameController {
     fun initGame() {
         logger.info("Starting game with ${players.size} players")
         initDeck()
+        rounds = deck.size / players.size
         initPlayerCircle()
         chooseStartingPlayer()
         giveCards()
     }
 
     fun playGame() {
-        while(players[0].cards.size > 0) {
+        while(rounds-- > 0) {
             roundLoop()
         }
         endGameReport()
@@ -46,7 +48,7 @@ class GameController {
             it.player.giveTurn(this)
         }
         val points = plate.fold(0) { counter, card -> counter + card.value }
-        println("${handWinner!!.name} has won the hand and gets $points")
+        logger.info("${handWinner!!.name} has won the hand and gets $points")
 
         handWinner!!.score += points
         playersCircle.setHead(handWinner!!)
@@ -57,6 +59,7 @@ class GameController {
     }
 
     fun play(player: IPlayer, card: Card) {
+        logger.debug("Player ${player.name} has played ${card.number} of ${card.suit}")
         if(plate.isEmpty() || card > winningCard!!) {
             handWinner = player
             winningCard = card
